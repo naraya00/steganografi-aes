@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <title>Steganografi AES</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --bg-dark: #0b0f1a;
+      --bg-light: #f4f4f4;
+      --text-dark: #ffffff;
+      --text-light: #000000;
+      --accent: #00ffcc;
+    }
+
+    [data-theme="dark"] {
+      background-color: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    [data-theme="light"] {
+      background-color: var(--bg-light);
+      color: var(--text-light);
+    }
+
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      transition: background-color 0.3s, color 0.3s;
+      padding: 2rem;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: var(--accent);
+    }
+
+    .container {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    form {
+      border: 1px solid var(--accent);
+      padding: 1rem;
+      border-radius: 10px;
+      width: 300px;
+      background-color: rgba(0, 255, 204, 0.05);
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      border: none;
+      border-radius: 5px;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      background-color: var(--accent);
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .output {
+      margin-top: 2rem;
+      text-align: center;
+    }
+
+    .image-preview {
+      max-width: 100%;
+      max-height: 300px;
+      border: 2px solid var(--accent);
+      border-radius: 10px;
+      margin: 1rem auto;
+    }
+
+    .dark-toggle {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+    }
+
+    .loader {
+      display: none;
+      text-align: center;
+      color: var(--accent);
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <button class="dark-toggle" onclick="toggleTheme()">🌙</button>
+
+  <h1>🛡️ Steganografi + AES Encrypt</h1>
+
+  <div class="container">
+
+    <!-- Form ENCODE -->
+    <form action="/encode" method="POST" enctype="multipart/form-data" onsubmit="showLoader()">
+      <h3>🔐 Encode Pesan</h3>
+      <input type="file" name="image" required>
+      <textarea name="message" placeholder="Pesan rahasia..." required></textarea>
+      <input type="password" name="password" placeholder="Password AES" required>
+      <button type="submit">Encode</button>
+    </form>
+
+    <!-- Form DECODE -->
+    <form action="/decode" method="POST" enctype="multipart/form-data" onsubmit="showLoader()">
+      <h3>🕵️‍♂️ Decode Pesan</h3>
+      <input type="file" name="image" required>
+      <input type="password" name="password" placeholder="Password AES" required>
+      <button type="submit">Decode</button>
+    </form>
+
+  </div>
+
+  <div class="loader" id="loader">
+    <p>⏳ Menyisipkan / Membaca pesan... <br><em>Loading...</em></p>
+  </div>
+
+  <div class="output">
+    {% if stego_image %}
+      <h3>✅ Gambar hasil encode:</h3>
+      <img src="{{ url_for('static', filename=stego_image) }}" class="image-preview">
+      <br>
+      <a href="{{ url_for('static', filename=stego_image) }}" download>
+        <button>⬇️ Download Gambar</button>
+      </a>
+    {% endif %}
+
+    {% if decoded_message %}
+      <h3>📥 Pesan Tersembunyi:</h3>
+      <div style="white-space: pre-wrap; background: #111; padding: 1rem; border-radius: 10px; border: 1px solid var(--accent); color: #00ffcc;">
+        {{ decoded_message }}
+      </div>
+    {% endif %}
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const newTheme = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+    }
+
+    function showLoader() {
+      document.getElementById('loader').style.display = 'block';
+    }
+
+    // Set theme from localStorage
+    window.onload = () => {
+      const saved = localStorage.getItem('theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+    };
+  </script>
+
+</body>
+</html>
